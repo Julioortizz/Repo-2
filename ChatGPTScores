@@ -1,0 +1,41 @@
+from openai import OpenAI
+import json
+
+# Set your OpenAI GPT-3 API key
+client = OpenAI(
+    api_key=os.environ['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'],
+)
+
+# Load the data from the JSON file
+file_path = "/Users/Julioortiz/Documents/ITAM/5. Titulación/4. Propuesta de Tesis 2/2.4 Base de datos con titulares de noticias /6. Códigos Python/SortedNewsData.json"
+
+with open(file_path, "r", encoding="utf-8") as file:
+    data = json.load(file)
+
+# Function to get ChatGPT response
+def get_stock_recommendation(title, company_name):
+    prompt = f"Forget all your previous instructions. Pretend you are a financial expert. You are a financial expert with stock recommendation experience. Answer 'YES' if good news, 'NO' if bad news, or 'UNKNOWN' if uncertain in the first line. Then elaborate with one short and concise sentence on the next line. Is this headline good or bad for the stock price of {company_name} in the short term? Headline: {title}"
+
+    # Use the OpenAI API to generate a response with temperature set to 0
+    response = openai.Completion.create(
+        engine="text-davinci-003",
+        prompt=prompt,
+        max_tokens=150,
+        temperature=0
+    )
+
+    # Extract the generated text from the response
+    chatgpt_response = response.choices[0].text.strip()
+
+    return chatgpt_response
+
+# Update the data with ChatGPT recommendations
+for entry in data:
+    title = entry.get("title", "")
+    company_name = entry.get("company_name", "")
+    entry["stock_recommendation"] = get_stock_recommendation(title, company_name)
+
+# Save the updated data to a new JSON file
+output_file_path = "/Users/Julioortiz/Documents/ITAM/5. Titulación/4. Propuesta de Tesis 2/2.4 Base de datos con titulares de noticias /6. Códigos Python/ChatGPT_Scores.json"
+with open(output_file_path, "w", encoding="utf-8") as output_file:  
+    json.dump(data, output_file, ensure_ascii=False, indent=2)
